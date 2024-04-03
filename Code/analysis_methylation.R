@@ -1,39 +1,10 @@
 # initialize settings
 rm(list = ls())
-memory.limit(size = 100000)
 
-# Load required libraries
-library(readr)
-library(Matrix)
-library(Seurat)
-require(Biobase)
-library(AnnotationDbi)
-library(org.Hs.eg.db)
-require(stringr)
-require(ggplot2)
-library(BayesPrism)
-library(devtools)
-library(matrixStats)
-library(SummarizedExperiment)
-library(survival)
-library(ComplexHeatmap)
-library(clusterProfiler)
-library(TCGAbiolinks)
-library(SummarizedExperiment)
-# library(biomaRt)
-library(e1071)
-library(KEGGREST)
-library(httr)
-library(GSEABase)
-require(reshape2)
-library(dplyr)
-library(glmnet)
-library(pROC)
-library(umap)
-theme_set(theme_bw())
+#load the required packaes:
+source("/media/chronos/Storage/ayelet/ProjectsCode/CancerTrajectory/Code/initial_settings.R")
 
-
-data_dir_bulk_tissue <- "D:\\Ayelet\\bulk_TCGA"
+data_dir_bulk_tissue <- "/media/chronos/Storage/ayelet/TCGA_bulk_GE"
 
 # count the number of NAT samples for each cancer type --------------------------------------------------------
 cancer_types <- list.dirs(data_dir_bulk_tissue, full.names = FALSE, recursive = FALSE)
