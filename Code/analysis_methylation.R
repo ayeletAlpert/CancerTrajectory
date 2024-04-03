@@ -1,7 +1,8 @@
-# load packages -----------------------------------------------------------
+# initialize settings
 rm(list = ls())
 memory.limit(size = 100000)
-# Load the readr library
+
+# Load required libraries
 library(readr)
 library(Matrix)
 library(Seurat)
@@ -14,7 +15,6 @@ library(BayesPrism)
 library(devtools)
 library(matrixStats)
 library(SummarizedExperiment)
-library(InstaPrism)
 library(survival)
 library(ComplexHeatmap)
 library(clusterProfiler)
@@ -31,7 +31,7 @@ library(glmnet)
 library(pROC)
 library(umap)
 theme_set(theme_bw())
-# Load required libraries
+
 
 data_dir_bulk_tissue <- "D:\\Ayelet\\bulk_TCGA"
 
