@@ -40,8 +40,11 @@ ggplot(stages_per_cancer, aes(x = rel_stages, fill = rel_stages)) +
 
 #Identify per cancer the DE genes over stages:
 cancer_types_short <- c("BLCA", "COAD", "READ", "KIRP", "KIRC", "LUAD", "LUSC", "READ")
-DE_genes_Xross_stages <- do.call('rbind', lapply(cancer_types_short, function(cancer_type){
-  message(cancer_type)
+total_cancer_types <- length(cancer_types_short)
+progress_interval <- 1  # Adjust this value as needed
+
+DE_genes_Xross_stages <- do.call('rbind', lapply(paste0(cancer_types_short, "_TCGA.rds"), function(cancer_type){
+  cat(paste("\nReading data for:", cancer_type, "\n"))
   cancer_type_GE_data <- readRDS(file = file.path(data_dir_bulk_tissue, cancer_type))
   rownames(cancer_type_GE_data) <- sub("\\.\\d+$", "", rownames(cancer_type_GE_data))
   
@@ -50,7 +53,7 @@ DE_genes_Xross_stages <- do.call('rbind', lapply(cancer_types_short, function(ca
   
   #sort the stages alphabetically:
   stages <- gsub("([ABC])$", "", colData(cancer_type_GE_data)[rel_samples,"ajcc_pathologic_stage"])
-    
+  
   # Create a sorted vector of unique stages
   unique_stages <- sort(unique(stages))
   
@@ -60,17 +63,24 @@ DE_genes_Xross_stages <- do.call('rbind', lapply(cancer_types_short, function(ca
   # Convert stages to numerical values
   numerical_stages <- sapply(stages, function(stage) mapping[stage])
   
-  p_vals_genes_stages <- do.call('rbind', lapply(1:nrow(cancer_type_GE_data), function(i){
-    message(i)
+  total_genes <- nrow(cancer_type_GE_data)
+  p_vals_genes_stages <- do.call('rbind', lapply(1:total_genes, function(i){
     if(sum(assays(cancer_type_GE_data)$tpm_unstrand[i, rel_samples] == 0) == length(rel_samples)){return(NULL)}
     lm_res <- summary(lm(assays(cancer_type_GE_data)$tpm_unstrand[i, rel_samples] ~ numerical_stages))
     # plot(cancer_type_RnaseqSE_stage, assays(exp_data)$tpm_unstrand[gene,rel_samples_healthy])
+    
+    # Calculate progress percentage
+    progress <- round((i / total_genes) * 100)
+    if (progress %% progress_interval == 0) {
+      cat("\rProgress:", progress, "% ", sep = "")
+    }
+    
     return(data.frame(gene_ensembl = rownames(cancer_type_GE_data)[i],
                       #gene_symbol = ensembl2sym(rownames(cancer_type_GE_data)[i]),
                       p_val = coef(lm_res)[2,4]))
   }))
-  rel_stages <- colData(cancer_type_GE_data)[rel_samples,"ajcc_pathologic_stage"]
-  rel_stages <- rel_stages[!is.na(rel_stages)]
-  rel_stages <- gsub("([ABC])$", "", rel_stages)
-  return(data.frame(cancer_type = sub("\\_TCGA\\.rds$", "", cancer_type), rel_stages = rel_stages))
+  
+  return(data.frame(cancer_type = sub("\\_TCGA\\.rds$", "", cancer_type), p_vals_genes_stages))
 }))
+ggplot(DE_genes_Xross_stages, aes(x = p_val)) + geom_histogram() + facet_wrap(~cancer_type)
+cat("\n")  # Add a new line after progress is completed
