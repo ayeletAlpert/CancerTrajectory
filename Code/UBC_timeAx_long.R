@@ -25,6 +25,7 @@ phen_data_short_long_time_course$tumor_stage <- factor(phen_data_short_long_time
   
 #run TimeAx
 model = modelCreation(expression_data_long_time_course, phen_data_short_long_time_course$patient_identifier)
+saveRDS(model, file = "/media/chronos/Storage/ayelet/saved_data/cancer_trajectory/model_UBC_longitudinal.rds")
 
 #get pseudotime values:
 pseudotimeStats = predictByConsensus(model, expression_data_long_time_course)
@@ -34,3 +35,13 @@ uncertainty = pseudotimeStats$uncertainty
 #check the correlation with tumor stage:
 phen_data_short_long_time_course$pseudotime <- pseudotime
 ggplot(phen_data_short_long_time_course, aes(x = tumor_stage, y = pseudotime)) + geom_boxplot() + geom_jitter(width = 0.1)
+
+#show the dynamics of one gene along the pseudotime:
+gene <- "ITGBL1"
+gene <- "ACOT11"
+gene <- "ATL2"
+df_exp_gene <- data.frame(exp_gene = as.numeric(t(expression_data_long_time_course[gene,])), pseudotime)
+ggplot(df_exp_gene, aes(x = pseudotime, y = exp_gene)) + geom_point() + ggtitle(gene) + geom_smooth() + theme_minimal()
+
+
+summary(lm(exp_gene ~ pseudotime, data = df_exp_gene))
